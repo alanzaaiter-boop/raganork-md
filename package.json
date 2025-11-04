@@ -1,5 +1,5 @@
 {
-  "name": "raganork-md",
+  "name": "latenight",
   "version": "6.2.10",
   "description": "A multi functional wa bot.",
   "main": "index.js",
@@ -11,11 +11,12 @@
     "whatsapp",
     "bot",
     "baileys",
-    "raganork"
+    "latenight"
   ],
-  "author": "Sourav K",
+  "author": "abbas",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "node-fetch": "^3.3.2"
     "@vitalets/google-translate-api": "^9.2.1",
     "acrcloud": "^1.4.0",
     "audio-decode": "^2.2.3",
@@ -43,3 +44,4 @@
     "youtube-sr": "^4.3.11"
   }
 }
+
