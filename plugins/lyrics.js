@@ -1,27 +1,28 @@
 import fetch from "node-fetch";
 
-const handler = async (m, { text, conn }) => {
-  if (!text) return m.reply("🎵 أرسل اسم الأغنية بعد الأمر، مثل:\n.lyrics Shape of You");
-
-  const query = encodeURIComponent(text);
-  const url = `https://api.lyrics.ovh/v1/${query}`;
+const handler = async (m, { text }) => {
+  if (!text) return m.reply("🎵 أرسل اسم الأغنية بعد الأمر.\nمثال: *.lyrics shape of you*");
 
   try {
-    const res = await fetch(url);
+    const query = encodeURIComponent(text);
+    const res = await fetch(`https://api.lyrics.ovh/v1/${query}`);
     const data = await res.json();
 
     if (!data.lyrics) return m.reply("❌ لم أجد كلمات هذه الأغنية.");
 
-    await m.reply(`🎶 *Lyrics for:* ${text}\n\n${data.lyrics}`);
-  } catch (e) {
-    console.error(e);
+    const lyrics = data.lyrics.length > 4000 
+      ? data.lyrics.substring(0, 4000) + "\n\n...تم الاقتصاص"
+      : data.lyrics;
+
+    await m.reply(`🎶 *Lyrics for:* ${text}\n\n${lyrics}`);
+  } catch (err) {
+    console.error(err);
     m.reply("⚠️ حدث خطأ أثناء جلب الكلمات.");
   }
 };
 
-// Command trigger (change 'lyrics' to whatever your bot prefix uses)
-handler.command = ["lyrics"];
 handler.help = ["lyrics"];
 handler.tags = ["music"];
+handler.command = ["lyrics", "lyric"];
 
 export default handler;
