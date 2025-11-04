@@ -1,43 +1,27 @@
-const fetch = require('node-fetch');
+import fetch from "node-fetch";
 
-async function lyricsCommand(sock, chatId, songTitle, message) {
-    if (!songTitle) {
-        await sock.sendMessage(chatId, { 
-            text: '🔍 Please enter the song name to get the lyrics! Usage: *lyrics <song name>*'
-        },{ quoted: message });
-        return;
-    }
+const handler = async (m, { text, conn }) => {
+  if (!text) return m.reply("🎵 أرسل اسم الأغنية بعد الأمر، مثل:\n.lyrics Shape of You");
 
-    try {
-        // Use lyricsapi.fly.dev and return only the raw lyrics text
-        const apiUrl = `https://lyricsapi.fly.dev/api/lyrics?q=${encodeURIComponent(songTitle)}`;
-        const res = await fetch(apiUrl);
-        
-        if (!res.ok) {
-            const errText = await res.text();
-            throw errText;
-        }
-        
-        const data = await res.json();
+  const query = encodeURIComponent(text);
+  const url = `https://api.lyrics.ovh/v1/${query}`;
 
-        const lyrics = data && data.result && data.result.lyrics ? data.result.lyrics : null;
-        if (!lyrics) {
-            await sock.sendMessage(chatId, {
-                text: `❌ Sorry, I couldn't find any lyrics for "${songTitle}".`
-            },{ quoted: message });
-            return;
-        }
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-        const maxChars = 4096;
-        const output = lyrics.length > maxChars ? lyrics.slice(0, maxChars - 3) + '...' : lyrics;
+    if (!data.lyrics) return m.reply("❌ لم أجد كلمات هذه الأغنية.");
 
-        await sock.sendMessage(chatId, { text: output }, { quoted: message });
-    } catch (error) {
-        console.error('Error in lyrics command:', error);
-        await sock.sendMessage(chatId, { 
-            text: `❌ An error occurred while fetching the lyrics for "${songTitle}".`
-        },{ quoted: message });
-    }
-}
+    await m.reply(`🎶 *Lyrics for:* ${text}\n\n${data.lyrics}`);
+  } catch (e) {
+    console.error(e);
+    m.reply("⚠️ حدث خطأ أثناء جلب الكلمات.");
+  }
+};
 
-module.exports = { lyricsCommand };
+// Command trigger (change 'lyrics' to whatever your bot prefix uses)
+handler.command = ["lyrics"];
+handler.help = ["lyrics"];
+handler.tags = ["music"];
+
+export default handler;
