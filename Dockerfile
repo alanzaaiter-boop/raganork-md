@@ -1,16 +1,23 @@
-FROM node:22-alpine
-RUN apk add --no-cache \
-    git \
-    ffmpeg \
-    libwebp-tools \
-    python3 \
-    make \
-    g++
-ADD https://api.github.com/repos/souravkl11/raganork-md/git/refs/heads/main version.json
-RUN git clone -b main https://github.com/souravkl11/raganork-md /rgnk
-WORKDIR /rgnk
-RUN mkdir -p temp
-ENV TZ=Asia/Kolkata
-RUN npm install -g --force yarn pm2
-RUN yarn install
+# Use an official Node.js image
+FROM node:18
+
+# Install ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
+# Create and set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy all project files
+COPY . .
+
+# Expose port (optional, useful if your bot uses a web dashboard or webhook)
+EXPOSE 3000
+
+# Start the bot
 CMD ["npm", "start"]
