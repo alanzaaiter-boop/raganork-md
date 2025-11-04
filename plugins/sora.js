@@ -42,4 +42,3 @@ async function soraCommand(sock, chatId, message) {
 
 module.exports = soraCommand;
 
-
