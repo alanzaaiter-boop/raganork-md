@@ -1,25 +1,32 @@
 import fetch from "node-fetch";
 
 let handler = async (m, { text }) => {
-  if (!text) return m.reply("🎵 Send the song name after the command.\nExample: *.lyrics shape of you*");
+  if (!text) return m.reply("🎵 Send the song name in this format:\n.lyrics Artist - Title");
 
   try {
-    let song = encodeURIComponent(text);
-    let response = await fetch(`https://api.lyrics.ovh/v1/${song}`);
-    let data = await response.json();
+    let [artist, ...rest] = text.split("-");
+    if (!artist || !rest.length)
+      return m.reply("⚠️ Please use: .lyrics Artist - Title");
 
-    if (!data.lyrics) return m.reply("❌ Couldn't find the lyrics for this song.");
+    artist = artist.trim();
+    const title = rest.join("-").trim();
+    const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    let lyrics = data.lyrics.substring(0, 4000);
-    await m.reply(`🎶 *Lyrics for:* ${text}\n\n${lyrics}`);
-  } catch (e) {
-    console.error("Lyrics error:", e);
-    m.reply("⚠️ An error occurred while fetching the lyrics.");
+    if (!data.lyrics) return m.reply("❌ No lyrics found for that song.");
+
+    const lyrics = data.lyrics.slice(0, 4000);
+    await m.reply(`🎶 *${artist} – ${title}*\n\n${lyrics}`);
+  } catch (err) {
+    console.error("Lyrics plugin error:", err);
+    m.reply("⚠️ Error fetching lyrics.");
   }
 };
 
+// ↓↓↓ this is important ↓↓↓
 handler.help = ["lyrics"];
 handler.tags = ["music"];
-handler.command = /^(lyrics|lyric)$/i;
+handler.command = /^lyrics$/i;
 
 export default handler;
