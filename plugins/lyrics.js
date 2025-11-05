@@ -1,3 +1,4 @@
+console.log("✅ lyrics.js plugin loaded");
 const lyricsFinder = require("lyrics-finder");
 
 async function lyricsCommand(sock, chatId, message) {
