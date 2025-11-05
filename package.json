@@ -17,6 +17,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@vitalets/google-translate-api": "^9.2.1",
+    "lyrics-finder": "^21.7.0",
     "node-fetch": "^3.3.2",
     "acrcloud": "^1.4.0",
     "audio-decode": "^2.2.3",
@@ -44,6 +45,7 @@
     "youtube-sr": "^4.3.11"
   }
 }
+
 
 
 
