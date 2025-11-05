@@ -7,7 +7,7 @@ class BotManager {
     constructor() {
         this.bots = new Map(); 
     }
-
+    
     async initializeBots() {
         logger.info({ sessions: SESSION }, `Initializing all configured bots.`);
         await CustomAuthState.deleteGarbageSessions(SESSION);        
@@ -28,6 +28,15 @@ class BotManager {
             }
         }
     }
+    const fs = require('fs');
+const path = './plugins/'; // folder where your lyrics.js is
+
+fs.readdirSync(path).forEach(file => {
+    if (file.endsWith('.js')) {
+        require(`${path}${file}`);
+        console.log(`Plugin loaded: ${file}`);
+    }
+});
 
     getBot(sessionId) {
         return this.bots.get(sessionId);
@@ -87,5 +96,6 @@ class BotManager {
         }
     }
 }
+
 
 module.exports = { BotManager };
