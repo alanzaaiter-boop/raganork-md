@@ -1,32 +1,31 @@
-import fetch from "node-fetch";
+const lyricsFinder = require("lyrics-finder");
 
-let handler = async (m, { text }) => {
-  if (!text) return m.reply("🎵 Send the song name in this format:\n.lyrics Artist - Title");
+module.exports = {
+  name: "lyrics",
+  description: "Finds song lyrics by name",
+  usage: "lyrics <song name>",
+  async execute(sock, chatUpdate, args) {
+    const from = chatUpdate.key.remoteJid;
+    const songName = args.join(" ");
+    if (!songName) {
+      await sock.sendMessage(from, { text: "🎵 Please type a song name!" });
+      return;
+    }
 
-  try {
-    let [artist, ...rest] = text.split("-");
-    if (!artist || !rest.length)
-      return m.reply("⚠️ Please use: .lyrics Artist - Title");
+    try {
+      const lyrics = await lyricsFinder("", songName);
+      if (!lyrics) {
+        await sock.sendMessage(from, { text: "❌ No lyrics found for that song." });
+        return;
+      }
 
-    artist = artist.trim();
-    const title = rest.join("-").trim();
-    const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (!data.lyrics) return m.reply("❌ No lyrics found for that song.");
-
-    const lyrics = data.lyrics.slice(0, 4000);
-    await m.reply(`🎶 *${artist} – ${title}*\n\n${lyrics}`);
-  } catch (err) {
-    console.error("Lyrics plugin error:", err);
-    m.reply("⚠️ Error fetching lyrics.");
-  }
+      const chunks = lyrics.match(/[\s\S]{1,4000}/g);
+      for (const chunk of chunks) {
+        await sock.sendMessage(from, { text: chunk });
+      }
+    } catch (err) {
+      console.error("Lyrics error:", err);
+      await sock.sendMessage(from, { text: "⚠️ Error fetching lyrics." });
+    }
+  },
 };
-
-// ↓↓↓ this is important ↓↓↓
-handler.help = ["lyrics"];
-handler.tags = ["music"];
-handler.command = /^lyrics$/i;
-
-export default handler;
