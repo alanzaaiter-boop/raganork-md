@@ -13,7 +13,12 @@ const { BotManager } = require("./core/manager");
 const config = require("./config");
 const { SESSION, logger } = config;
 const http = require("http");
-const { ensureTempDir, TEMP_DIR } = require("./core/helpers");
+const {
+  ensureTempDir,
+  TEMP_DIR,
+  initializeKickBot,
+  cleanupKickBot,
+} = require("./core/helpers");
 
 async function main() {
   ensureTempDir();
@@ -50,6 +55,7 @@ async function main() {
   const shutdownHandler = async (signal) => {
     console.log(`\nReceived ${signal}, shutting down...`);
     logger.info(`Received ${signal}, shutting down...`);
+    cleanupKickBot();
     await botManager.shutdown();
     process.exit(0);
   };
@@ -60,18 +66,29 @@ async function main() {
   await botManager.initializeBots();
   console.log("- Bot initialization complete.");
   logger.info("Bot initialization complete");
-  const PORT = process.env.PORT || 3000;
 
-  
+  initializeKickBot();
 
-  server.listen(PORT, () => {
-    logger.info(`Web server listening on port ${PORT}`);
-  });
+  const startServer = () => {
+    const PORT = process.env.PORT || 3000;
+
+    const server = http.createServer((req, res) => {
+      if (req.url === "/health") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("OK");
+      } else {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Raganork Bot is running!");
+      }
+    });
+
+    server.listen(PORT, () => {
+      logger.info(`Web server listening on port ${PORT}`);
+    });
+  };
+
+  if (process.env.USE_SERVER !== "false") startServer();
 }
-
-/**
- * Validates critical configuration values after loading from database
- */
 
 if (require.main === module) {
   main().catch((error) => {
@@ -80,4 +97,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-
