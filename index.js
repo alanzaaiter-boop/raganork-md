@@ -62,15 +62,7 @@ async function main() {
   logger.info("Bot initialization complete");
   const PORT = process.env.PORT || 3000;
 
-  const server = http.createServer((req, res) => {
-    if (req.url === "/health") {
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end("OK");
-    } else {
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end("Raganork Bot is running!");
-    }
-  });
+  
 
   server.listen(PORT, () => {
     logger.info(`Web server listening on port ${PORT}`);
@@ -88,3 +80,4 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
